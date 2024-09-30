@@ -7,8 +7,7 @@ import SignupPage from "../pages/SignupPage";
 const queryClient = new QueryClient();
 
 describe("회원가입 테스트", () => {
-  test("비밀번호와 비밀번호 확인 값이 일치하지 않으면 에러 메시지가 표시된다", async () => {
-    // given - 회원가입 페이지가 그려짐
+  beforeEach(() => {
     const routes = [{ path: "/signup", element: <SignupPage /> }];
     const router = createMemoryRouter(routes, {
       initialEntries: ["/signup"],
@@ -20,6 +19,10 @@ describe("회원가입 테스트", () => {
         <RouterProvider router={router} />
       </QueryClientProvider>
     );
+  });
+
+  test("비밀번호와 비밀번호 확인 값이 일치하지 않으면 에러 메시지가 표시된다", async () => {
+    // given - 회원가입 페이지가 그려짐 (beforeEach에서 실행)
 
     // when - 비밀번호와 비밀번호 확인 값이 일치하지 않음
     const passwordInput = screen.getByLabelText("비밀번호");
@@ -33,5 +36,24 @@ describe("회원가입 테스트", () => {
     // then - 에러메시지 표시
     const errorMessage = await screen.findByTestId("error-message");
     expect(errorMessage).toBeInTheDocument();
+  });
+
+  test("이메일을 입력하고, 비밀번호와 비밀번호 확인 값이 일치하면 회원가입 버튼이 활성화된다", () => {
+    // given - 회원가입 페이지가 그려짐 (beforeEach에서 실행)
+    // 회원가입 버튼 비활성화 검증
+    const signupButton = screen.getByRole("button", { name: "회원가입" });
+    expect(signupButton).toBeDisabled();
+
+    // when - 이메일 입력, 비밀번호/비밀번호 확인 값 일치
+    const emailInput = screen.getByLabelText("이메일");
+    const passwordInput = screen.getByLabelText("비밀번호");
+    const confirmPasswordInput = screen.getByLabelText("비밀번호 확인");
+
+    fireEvent.change(emailInput, { target: { value: "test@email.com" } });
+    fireEvent.change(passwordInput, { target: { value: "password" } });
+    fireEvent.change(confirmPasswordInput, { target: { value: "password" } });
+
+    // then - 회원가입 버튼 활성화
+    expect(signupButton).toBeEnabled();
   });
 });
